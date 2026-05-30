@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.png">
+<title>ICO2GO</title>
+<style>
+* { box-sizing: border-box; }
+
+:root {
+    --bg: #111;
+    --text: #eee;
+    --panel: #1b1b1b;
+    --panel-border: #333;
+    --input-bg: #0d0d0d;
+    --input-text: #ddd;
+    --muted: #aaa;
+    --button: #2d6cdf;
+    --button-hover: #3d7cff;
+    --button-disabled: #555;
+    --drop-bg: #151515;
+    --drop-border: #4a4a4a;
+    --drop-hover-bg: #1d2638;
+    --drop-hover-border: #3d7cff;
+    --checker-a: #333;
+    --checker-b: transparent;
+    --transition-speed: 1500ms;
+    
+    --good-text: #4ade80;
+    --bad-text: #f87171;
+    --prime-text: #5b8cff;
+    --secondary-text: #8e38c0;
+}
+
+body.light {
+    --bg: #f4f5f7;
+    --text: #111;
+    --panel: #fff;
+    --panel-border: #d6d9df;
+    --input-bg: #f9fafb;
+    --input-text: #111;
+    --muted: #667085;
+    --button: #2d6cdf;
+    --button-hover: #1f5ed0;
+    --button-disabled: #a8b0bd;
+    --drop-bg: #f8fafc;
+    --drop-border: #b9c0cc;
+    --drop-hover-bg: #eef4ff;
+    --drop-hover-border: #2d6cdf;
+    --checker-a: #d0d5dd;
+    --checker-b: transparent;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+
+t-1 { color: var(--prime-text); }
+t-2 { color: var(--secondary-text); }
+t-3 { color: var(--good-text); }
+t-4 { color: var(--bad-text); }
+
+h1 { margin-top: 0; font-size: 24px; }
+h2 { margin-top: 0; }
+a { color: var(--prime-text); }
+
+h3 {text-decoration: underline;}
+h3:hover { text-decoration: none; }
+
+.subcaption { color: var(--muted); font-size: 14px; margin-top: -8px; margin-bottom: 18px;justify-content: center; align-items: center; display: flex; gap: 6px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.icon-btn { width: 36px; height: 36px; margin: 0 0 0 6px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text); border: none; border-radius: 999px; font-size: 24px; line-height: 1; cursor: pointer; opacity: 0.75; transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease; }
+.icon-btn:hover { background: var(--input-bg); opacity: 1; transform: translateY(-1px); }
+.icon-btn:active { transform: translateY(0) scale(0.95); }
+.icon-btn:focus-visible { outline: 2px solid var(--button); outline-offset: 2px; }
+.drop-zone { border: 2px dashed var(--drop-border); background: var(--drop-bg); border-radius: 12px; min-height: 300px; padding: 28px; display: flex; flex-direction: column; justify-content: center; transition: background 0.25s ease, border-color 0.25s ease; }
+.drop-zone.dragover { background: var(--drop-hover-bg); border-color: var(--drop-hover-border); }
+.drop-zone-inner { max-width: 760px; width: 100%; margin: 0 auto; text-align: center; }
+.file-row { display: flex; justify-content: center; margin-bottom: 14px; }
+input[type="file"] { display: none; }
+button, .button-like { display: inline-block; background: var(--button); color: #fff; border: none; border-radius: 6px; padding: 10px 14px; cursor: pointer; font-size: 14px; line-height: 1.2; margin-right: 8px; margin-top: 8px; text-decoration: none; user-select: none; }
+button:hover, .button-like:hover { background: var(--button-hover); }
+button:disabled { background: var(--button-disabled); cursor: not-allowed; }
+textarea { width: 100%; height: 180px; background: var(--input-bg); color: var(--input-text); border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px; font-family: Consolas, monospace; resize: vertical; }
+.sizes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.sizes label { background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 8px 10px; cursor: pointer; }
+.preview-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+.preview-card { background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; width: 160px; text-align: center; }
+.preview-card img { max-width: 96px; max-height: 96px; background: linear-gradient(45deg, var(--checker-a) 25%, var(--checker-b) 25%), linear-gradient(-45deg, var(--checker-a) 25%, var(--checker-b) 25%), linear-gradient(45deg, var(--checker-b) 75%, var(--checker-a) 75%), linear-gradient(-45deg, var(--checker-b) 75%, var(--checker-a) 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0; border: 1px solid var(--panel-border); image-rendering: auto; }
+.small { color: var(--muted); font-size: 13px; }
+.status { margin-top: 10px; color: var(--muted); font-size: 13px; }
+
+.drop-icon { font-size: 42px; color: var(--muted); margin-bottom: 10px; }
+.drop-copy { color: var(--muted); margin: 4px 0 18px; }
+.paste-label { text-align: left; margin-top: 18px; margin-bottom: 8px; }
+
+.panel { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+.panel.center > :not(h2) { display: flex; justify-content: center; align-items: center; }
+.panel.center > .sizes { flex-wrap: nowrap; }
+.panel.center > #svgPreview { width: 100%; flex-direction: column; }
+.panel.center > #svgPreview svg { max-width: 160px; max-height: 160px; }
+.panel.center > .status { display: block; text-align: center; }
+
+/* not a bad idea to use unicode ▼ in summary::before content */
+summary { display: flex; align-items: center; justify-content: center; cursor: pointer; list-style: none; position: relative; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; transition: width var(--transition-speed) ease; }
+summary::before { content: ''; order: 2; font-size: 12px; transition: transform var(--transition-speed) ease; }
+details[open] summary::after { width: 100%; }
+details[open] summary::before { transform: rotate(180deg); }
+details::details-content { opacity: 0; block-size: 0; overflow: hidden; transition: content-visibility var(--transition-speed), block-size var(--transition-speed); transition-behavior: allow-discrete; transition-property: content-visibility, block-size, opacity;}
+details[open]::details-content { opacity: 1; block-size: auto;}
+details > :not(summary) { opacity: 1 ;}
+details { interpolate-size: allow-keywords; }
+
+#svgPreview { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; }
+#svgPreview svg { max-width: 160px; max-height: 160px; }
+#svgPreview img { max-width: 160px; max-height: 160px; }
+
+#icoPreview { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px; }
+#icoPreview img { width: 64px; height: 64px; image-rendering: auto; border: 1px solid var(--panel-border); background: var(--input-bg); border-radius: 6px; padding: 8px; }
+
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <img src="ico2go.svg" height="35">
+    <div>
+        <button id="showAllBtn" class="icon-btn" title="Show all sections" aria-label="Show all sections">👁</button>
+        <button id="themeToggleBtn" class="icon-btn" title="Toggle Light Mode" aria-label="Toggle light/dark mode">☀</button>
+    </div>
+</div>
+<div class="subcaption">SVG + PNG + Multi-Size ICO Converter</div>
+
+<div class="panel">
+    <h2>1. Load SVG or PNG</h2>
+
+    <details id="areaDropZone" open>
+        <summary style="display: none;">HIDDEN AREA - DROP ZONE</summary>
+        <div id="dropZone" class="drop-zone">
+            <div class="drop-zone-inner">
+                <div class="drop-icon">◇</div>
+
+                <div class="file-row">
+                    <label for="svgFile" class="button-like">Choose SVG or PNG File</label>
+                    <input id="svgFile" type="file" accept=".svg,image/svg+xml,.png,image/png">
+                </div>
+
+                <div class="drop-copy">or drop the SVG/PNG file here</div>
+
+                <p class="small paste-label">Or paste SVG markup directly:</p>
+                <textarea id="svgText" placeholder="<svg ...>...</svg>"></textarea>
+
+                <button id="loadBtn">Load SVG</button>
+
+                <div id="loadStatus" class="status"></div>
+            </div>
+        </div>
+    </details>
+
+    <details id="areaInputPreview">
+        <summary style="display: none;">HIDDEN AREA - INPUT PREVIEW</summary>
+        <div class="center" id="svgPreview"></div>
+    </details>
+
+</div>
+
+<details id="areaSizeSelection">
+  <summary style="display: none;">HIDDEN AREA - SIZE SELECTION</summary>
+
+    <div class="panel center">
+        <h2>2. Select Icon Sizes</h2>
+
+        <div class="sizes center">
+            <label><input type="checkbox" class="sizeCheck" value="16" checked> 16</label>
+            <label><input type="checkbox" class="sizeCheck" value="24" checked> 24</label>
+            <label><input type="checkbox" class="sizeCheck" value="32" checked> 32</label>
+            <label><input type="checkbox" class="sizeCheck" value="48" checked> 48</label>
+            <label><input type="checkbox" class="sizeCheck" value="64" checked> 64</label>
+            <label><input type="checkbox" class="sizeCheck" value="128" checked> 128</label>
+            <label><input type="checkbox" class="sizeCheck" value="256" checked> 256</label>
+            <label><input type="checkbox" class="sizeCheck" value="512" checked> 512</label>
+            <label><input type="checkbox" class="sizeCheck" value="1024" checked> 1024</label>
+            <label><input type="checkbox" class="sizeCheck" value="2048"> 2048</label>
+        </div>
+
+        <div class="center" style="display: none;" hidden>
+            <button id="convertBtn" disabled hidden>Generate PNGs</button>
+            <button id="icoBtn" disabled hidden>Generate ICO</button>
+        </div>
+
+        <div class="center">
+            <button id="generateBtn" disabled>Generate</button>
+        </div>
+
+
+
+        <div id="convertStatus" class="status"></div>
+        <div id="outputStatus" class="status"></div>
+    </div>
+
+</details>
+
+<details id="areaOutput">
+  <summary style="display: none;">HIDDEN AREA - OUTPUT</summary>
+
+    <div class="panel center">
+        <h2>3. Output</h2>
+
+        <div id="icoPreview" class="center"></div>
+        <div id="preview" class="preview-grid center"></div>     
+
+        <div class="center" style="display: flex; justify-content: center; align-items: center;">
+            <button id="downloadAllPngBtn" disabled>Download All PNGs Individually</button>
+            <button id="downloadIcoBtn" disabled>Download ICO</button>
+        </div>  
+
+        
+    </div>
+
+</details>
+
+<details> 
+    <summary><h3>About <t-1>ICO</t-1><t-4>2</t-4><t-3>GO</t-3></h3></summary>
+
+    <div style=" padding: 18px 20px 20px; color: var(--muted); font-size: 14px; line-height: 1.65; text-align: left; ">
+        <p style="margin: 0 0 12px;">
+            <strong><t-1>ICO</t-1><t-4>2</t-4><t-3>GO</t-3></strong> is a browser-based tool for converting
+            <strong style="color: var(--text);">SVG</strong> or
+            <strong style="color: var(--text);">PNG</strong> files into icon-ready PNG exports at multiple sizes.
+        </p>
+
+        <p style="margin: 0 0 12px;">
+            Files can be loaded by selecting them, dragging and dropping them into the upload area, or by pasting SVG markup directly.
+            After loading, choose the desired output sizes, and click the generate button to create both the individual embedded images,
+            and the final multi-size ICO file.
+        </p>
+
+        <p style="margin: 0;">
+            <strong><t-1>ICO</t-1><t-4>2</t-4><t-3>GO</t-3></strong> is free and open source. You can find the code on <a href="https://github.com/stephenmthomas/ico2go" target="_blank" rel="noopener">GitHub</a>.
+        </p>
+
+        <p style="margin: 18px 0 0;">
+        <strong><t-1>ICO</t-1><t-4>2</t-4><t-3>GO</t-3></strong> Copyright © 2026 ST. All rights reserved.
+        </p>
+    </div>
+
+</details>
+
+
+
+<script>
+let loadedSvgText = "";
+let loadedSvgBlobUrl = "";
+let loadedImageUrl = "";
+let loadedSourceType = "";
+let loadedSourceWidth = 0;
+let loadedSourceHeight = 0;
+let generatedPngs = [];
+let generatedIcoBlob = null;
+
+const svgFile = document.getElementById("svgFile");
+const svgText = document.getElementById("svgText");
+const loadBtn = document.getElementById("loadBtn");
+const convertBtn = document.getElementById("convertBtn");
+const icoBtn = document.getElementById("icoBtn");
+const downloadAllPngBtn = document.getElementById("downloadAllPngBtn");
+const downloadIcoBtn = document.getElementById("downloadIcoBtn");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+const showAllBtn = document.getElementById("showAllBtn");
+const dropZone = document.getElementById("dropZone");
+
+const loadStatus = document.getElementById("loadStatus");
+const convertStatus = document.getElementById("convertStatus");
+const outputStatus = document.getElementById("outputStatus");
+const preview = document.getElementById("preview");
+const svgPreview = document.getElementById("svgPreview");
+const generateBtn = document.getElementById("generateBtn");
+const icoPreview = document.getElementById("icoPreview");
+
+loadBtn.addEventListener("click", loadSvg);
+convertBtn.addEventListener("click", generatePngs);
+icoBtn.addEventListener("click", generateIco);
+downloadAllPngBtn.addEventListener("click", downloadAllPngs);
+downloadIcoBtn.addEventListener("click", downloadIco);
+themeToggleBtn.addEventListener("click", toggleTheme);
+showAllBtn.addEventListener("click", showAllAreas);
+generateBtn.addEventListener("click", generateAll);
+
+svgFile.addEventListener("change", async () => {
+    if (svgFile.files[0]) {
+        await loadFile(svgFile.files[0]);
+    }
+});
+
+dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragover");
+});
+
+dropZone.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+
+    const file = e.dataTransfer.files[0];
+
+    if (!file) {
+        loadStatus.textContent = "No file dropped.";
+        return;
+    }
+
+    await loadFile(file);
+});
+
+
+
+function toggleTheme() {
+    document.body.classList.toggle("light");
+
+    const isLight = document.body.classList.contains("light");
+
+    themeToggleBtn.textContent = isLight ? "☾" : "☀";
+    themeToggleBtn.title = isLight ? "Switch to dark mode" : "Switch to light mode";
+    themeToggleBtn.setAttribute("aria-label", themeToggleBtn.title);
+}
+
+function openArea(area) {
+    const element = document.getElementById(area);
+    if (!element) return;
+    element.setAttribute("open", "");
+}
+
+function hideArea(area) {
+  const element = document.getElementById(area);
+  if (!element) return;
+  element.removeAttribute('open');
+}
+
+function toggleArea(area) {
+  const element = document.getElementById(area);
+
+  if (!element) return;
+
+  if (element.hasAttribute('open')) {
+    element.removeAttribute('open');
+  } else {
+    element.setAttribute('open', '');
+  }
+}
+
+function showAllAreas() {
+    openArea("areaSizeSelection");
+    openArea("areaOutput");
+    openArea("areaDropZone");
+    openArea("areaInputPreview");
+}
+
+async function loadFile(file) {
+    const name = file.name.toLowerCase();
+    const isSvg = file.type === "image/svg+xml" || name.endsWith(".svg");
+    const isPng = file.type === "image/png" || name.endsWith(".png");
+
+    if (isSvg) {
+        loadedSvgText = await file.text();
+        svgText.value = loadedSvgText;
+        loadSvg();
+        openArea("areaSizeSelection");
+        openArea("areaInputPreview");
+        hideArea("areaDropZone");
+        generateBtn.disabled = false;
+        return;
+    }
+
+    if (isPng) {
+        await loadPng(file);
+        openArea("areaSizeSelection");
+        openArea("areaInputPreview");
+        hideArea("areaDropZone");
+        generateBtn.disabled = false;   
+        return;
+    }
+
+    loadStatus.textContent = "Dropped/selected file must be SVG or PNG.";
+}
+
+async function loadSvg() {
+    clearGenerated();
+    clearLoadedImageUrl();
+
+    if (svgText.value.trim()) {
+        loadedSvgText = svgText.value.trim();
+    }
+
+    if (!loadedSvgText) {
+        loadStatus.textContent = "No SVG loaded.";
+        convertBtn.disabled = true;
+        generateBtn.disabled = true;
+        clearSourcePreview();
+        return;
+    }
+
+    if (!loadedSvgText.includes("<svg")) {
+        loadStatus.textContent = "Input does not appear to contain an SVG element.";
+        convertBtn.disabled = true;
+        generateBtn.disabled = true;
+        clearSourcePreview();
+        return;
+    }
+
+    if (loadedSvgBlobUrl) {
+        URL.revokeObjectURL(loadedSvgBlobUrl);
+    }
+
+    const svgBlob = new Blob([loadedSvgText], { type: "image/svg+xml" });
+    loadedSvgBlobUrl = URL.createObjectURL(svgBlob);
+    loadedImageUrl = loadedSvgBlobUrl;
+    loadedSourceType = "svg";
+
+    const svgImage = await loadImageFromUrl(loadedImageUrl, "Could not load SVG as image.");
+    loadedSourceWidth = svgImage.naturalWidth || svgImage.width;
+    loadedSourceHeight = svgImage.naturalHeight || svgImage.height;
+
+    renderSourcePreview();
+    updateSizeAvailability();
+
+    loadStatus.textContent = "SVG loaded.";
+    convertBtn.disabled = false;
+    generateBtn.disabled = false;
+    openArea("areaSizeSelection");
+}
+
+async function loadPng(file) {
+    clearGenerated();
+    clearLoadedImageUrl();
+
+    loadedSvgText = "";
+    loadedSourceType = "png";
+    svgText.value = "";
+
+    loadedImageUrl = URL.createObjectURL(file);
+
+    const pngImage = await loadImageFromUrl(loadedImageUrl, "Could not load PNG image.");
+    loadedSourceWidth = pngImage.naturalWidth || pngImage.width;
+    loadedSourceHeight = pngImage.naturalHeight || pngImage.height;
+
+    renderSourcePreview();
+    updateSizeAvailability();
+
+    loadStatus.textContent = `PNG loaded: ${loadedSourceWidth} × ${loadedSourceHeight}. Larger output sizes have been disabled.`;
+    convertBtn.disabled = false;
+    generateBtn.disabled = false;
+    openArea("areaSizeSelection");
+}
+
+function clearLoadedImageUrl() {
+    if (loadedImageUrl && loadedImageUrl !== loadedSvgBlobUrl) {
+        URL.revokeObjectURL(loadedImageUrl);
+    }
+
+    loadedImageUrl = "";
+    loadedSourceType = "";
+    loadedSourceWidth = 0;
+    loadedSourceHeight = 0;
+}
+
+function clearSourcePreview() {
+    svgPreview.innerHTML = "<small>Your Upload:</small><br><br>";
+    updateSizeAvailability();
+}
+
+function renderSourcePreview() {
+    svgPreview.innerHTML = "<small>Your Upload:</small><br><br>";
+
+    if (loadedSourceType === "svg") {
+        const doc = new DOMParser().parseFromString(loadedSvgText, "image/svg+xml");
+        const parsedSvg = doc.querySelector("svg");
+
+        if (parsedSvg) {
+            const inlineSvg = sanitizeInlineSvg(parsedSvg);
+            inlineSvg.removeAttribute("width");
+            inlineSvg.removeAttribute("height");
+            inlineSvg.style.maxWidth = "160px";
+            inlineSvg.style.maxHeight = "160px";
+            inlineSvg.style.display = "block";
+            inlineSvg.style.margin = "0 0 12px 0";
+            svgPreview.appendChild(inlineSvg);
+        }
+
+        return;
+    }
+
+    if (loadedSourceType === "png") {
+        const img = document.createElement("img");
+        img.src = loadedImageUrl;
+        img.width = Math.min(loadedSourceWidth, 160);
+        img.height = Math.round((img.width / loadedSourceWidth) * loadedSourceHeight);
+        img.style.display = "block";
+        img.style.margin = "0 0 12px 0";
+        svgPreview.appendChild(img);
+    }
+}
+
+function sanitizeInlineSvg(svgElement) {
+    const clone = svgElement.cloneNode(true);
+
+    clone.querySelectorAll("script, foreignObject").forEach(x => x.remove());
+
+    const all = [clone, ...clone.querySelectorAll("*")];
+
+    for (const el of all) {
+        for (const attr of Array.from(el.attributes)) {
+            const name = attr.name.toLowerCase();
+            const value = attr.value.trim().toLowerCase();
+
+            if (name.startsWith("on")) {
+                el.removeAttribute(attr.name);
+            }
+
+            if ((name === "href" || name === "xlink:href") && value.startsWith("javascript:")) {
+                el.removeAttribute(attr.name);
+            }
+        }
+    }
+
+    return clone;
+}
+
+function updateSizeAvailability() {
+    const checks = Array.from(document.querySelectorAll(".sizeCheck"));
+    const maxPngSize = loadedSourceType === "png" ? Math.min(loadedSourceWidth, loadedSourceHeight) : Infinity;
+
+    for (const check of checks) {
+        const size = parseInt(check.value, 10);
+        const label = check.closest("label");
+        const shouldDisable = loadedSourceType === "png" && size > maxPngSize;
+
+        check.disabled = shouldDisable;
+
+        if (shouldDisable) {
+            check.checked = false;
+        }
+
+        if (label) {
+            label.style.opacity = shouldDisable ? "0.45" : "1";
+            label.style.cursor = shouldDisable ? "not-allowed" : "pointer";
+        }
+    }
+}
+
+function getSelectedSizes() {
+    return Array.from(document.querySelectorAll(".sizeCheck:checked:not(:disabled)"))
+        .map(x => parseInt(x.value, 10))
+        .filter(x => Number.isFinite(x) && x > 0)
+        .sort((a, b) => a - b);
+}
+
+async function generatePngs() {
+    clearGenerated();
+
+    const sizes = getSelectedSizes();
+
+    if (!loadedImageUrl) {
+        convertStatus.textContent = "Load an SVG or PNG first.";
+        return;
+    }
+
+    if (sizes.length === 0) {
+        convertStatus.textContent = "Select at least one size.";
+        return;
+    }
+
+    convertStatus.textContent = "Generating PNGs...";
+
+    const sourceImage = await loadImageFromUrl(loadedImageUrl, "Could not load source image.");
+
+    for (const size of sizes) {
+        if (loadedSourceType === "png" && size > Math.min(loadedSourceWidth, loadedSourceHeight)) {
+            continue;
+        }
+
+        const pngBlob = await renderImageToPngBlob(sourceImage, size, size);
+
+        generatedPngs.push({
+            size: size,
+            blob: pngBlob,
+            filename: `icon-${size}x${size}.png`
+        });
+    }
+
+    renderPreview();
+
+    openArea("areaOutput");
+
+    icoBtn.disabled = false;
+    downloadAllPngBtn.disabled = false;
+    generateBtn.disabled = false;
+
+    convertStatus.textContent = `Generated ${generatedPngs.length} PNG file(s).`;
+}
+
+async function generateAll() {
+    await generatePngs();
+
+    if (generatedPngs.length === 0) {
+        return;
+    }
+
+    await generateIco();
+}
+
+function loadImageFromUrl(url, errorMessage) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(errorMessage || "Could not load image."));
+
+        img.crossOrigin = "anonymous";
+        img.src = url;
+    });
+}
+
+function renderImageToPngBlob(img, width, height) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, width, height);
+
+        const sourceWidth = img.naturalWidth || img.width;
+        const sourceHeight = img.naturalHeight || img.height;
+
+        const scale = Math.min(width / sourceWidth, height / sourceHeight);
+
+        const drawWidth = Math.round(sourceWidth * scale);
+        const drawHeight = Math.round(sourceHeight * scale);
+
+        const drawX = Math.round((width - drawWidth) / 2);
+        const drawY = Math.round((height - drawHeight) / 2);
+
+        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+        canvas.toBlob((blob) => {
+            resolve(blob);
+        }, "image/png");
+    });
+}
+
+function renderPreview() {
+    preview.innerHTML = "";
+
+    for (const item of generatedPngs) {
+        const url = URL.createObjectURL(item.blob);
+
+        const card = document.createElement("div");
+        card.className = "preview-card";
+
+        const title = document.createElement("div");
+        title.textContent = `${item.size} × ${item.size}`;
+        title.style.marginBottom = "8px";
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.width = Math.min(item.size, 96);
+        img.height = Math.min(item.size, 96);
+
+        const br = document.createElement("br");
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = item.filename;
+        link.textContent = "Download PNG";
+
+        card.appendChild(title);
+        card.appendChild(img);
+        card.appendChild(br);
+        card.appendChild(link);
+
+        preview.appendChild(card);
+    }
+}
+
+async function generateIco() {
+    if (generatedPngs.length === 0) {
+        outputStatus.textContent = "Generate PNGs first.";
+        return;
+    }
+
+    const icoImages = generatedPngs.filter(x => x.size <= 256);
+
+    if (icoImages.length === 0) {
+        outputStatus.textContent = "ICO output supports selected sizes up to 256px. Select at least one size <= 256.";
+        return;
+    }
+
+    const pngBuffers = [];
+
+    for (const img of icoImages) {
+        pngBuffers.push(await img.blob.arrayBuffer());
+    }
+
+    const icoBuffer = buildIcoFile(icoImages, pngBuffers);
+
+    generatedIcoBlob = new Blob([icoBuffer], {
+        type: "image/x-icon"
+    });
+
+    renderIcoPreview();
+    downloadIcoBtn.disabled = false;
+    openArea("areaOutput");
+
+    outputStatus.textContent = `Generated ICO with ${icoImages.length} embedded PNG size(s): ${icoImages.map(x => x.size).join(", ")}.`;
+}
+
+function renderIcoPreview() {
+    if (!generatedIcoBlob || !icoPreview) {
+        return;
+    }
+
+    icoPreview.innerHTML = "";
+
+    const label = document.createElement("small");
+    label.textContent = "ICO Preview:";
+    label.style.display = "block";
+    label.style.marginBottom = "10px";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(generatedIcoBlob);
+    img.alt = "Generated ICO preview";
+
+    icoPreview.appendChild(label);
+    icoPreview.appendChild(img);
+}
+
+function buildIcoFile(images, pngBuffers) {
+    const imageCount = images.length;
+    const headerSize = 6;
+    const entrySize = 16;
+    const directorySize = headerSize + imageCount * entrySize;
+
+    let imageDataSize = 0;
+    for (const buffer of pngBuffers) {
+        imageDataSize += buffer.byteLength;
+    }
+
+    const totalSize = directorySize + imageDataSize;
+    const icoBuffer = new ArrayBuffer(totalSize);
+    const view = new DataView(icoBuffer);
+
+    let offset = 0;
+
+    view.setUint16(offset, 0, true);
+    offset += 2;
+
+    view.setUint16(offset, 1, true);
+    offset += 2;
+
+    view.setUint16(offset, imageCount, true);
+    offset += 2;
+
+    let imageOffset = directorySize;
+
+    for (let i = 0; i < imageCount; i++) {
+        const size = images[i].size;
+        const pngBuffer = pngBuffers[i];
+
+        view.setUint8(offset, size >= 256 ? 0 : size);
+        offset += 1;
+
+        view.setUint8(offset, size >= 256 ? 0 : size);
+        offset += 1;
+
+        view.setUint8(offset, 0);
+        offset += 1;
+
+        view.setUint8(offset, 0);
+        offset += 1;
+
+        view.setUint16(offset, 1, true);
+        offset += 2;
+
+        view.setUint16(offset, 32, true);
+        offset += 2;
+
+        view.setUint32(offset, pngBuffer.byteLength, true);
+        offset += 4;
+
+        view.setUint32(offset, imageOffset, true);
+        offset += 4;
+
+        imageOffset += pngBuffer.byteLength;
+    }
+
+    let dataOffset = directorySize;
+    const target = new Uint8Array(icoBuffer);
+
+    for (const pngBuffer of pngBuffers) {
+        target.set(new Uint8Array(pngBuffer), dataOffset);
+        dataOffset += pngBuffer.byteLength;
+    }
+
+    return icoBuffer;
+}
+
+function downloadAllPngs() {
+    if (generatedPngs.length === 0) {
+        outputStatus.textContent = "No PNGs generated.";
+        return;
+    }
+
+    for (const item of generatedPngs) {
+        const url = URL.createObjectURL(item.blob);
+        triggerDownload(url, item.filename);
+
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 5000);
+    }
+
+    outputStatus.textContent = `Started ${generatedPngs.length} PNG download(s).`;
+}
+
+function downloadIco() {
+    if (!generatedIcoBlob) {
+        outputStatus.textContent = "No ICO generated.";
+        return;
+    }
+
+    const url = URL.createObjectURL(generatedIcoBlob);
+    triggerDownload(url, "icon.ico");
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 5000);
+
+    outputStatus.textContent = "ICO download started.";
+}
+
+function triggerDownload(url, filename) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function clearGenerated() {
+    generatedPngs = [];
+    generatedIcoBlob = null;
+
+    preview.innerHTML = "";
+
+    icoBtn.disabled = true;
+    downloadAllPngBtn.disabled = true;
+    downloadIcoBtn.disabled = true;
+
+    convertStatus.textContent = "";
+    outputStatus.textContent = "";
+}
+</script>
+
+</body>
+</html>
